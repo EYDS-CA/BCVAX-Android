@@ -29,7 +29,7 @@ spotless {
 //    ratchetFrom 'origin/main'
 
     kotlin {
-        target '**/*.kt'
+        target 'src/*/java/**/*.kt'
         ktlint().userData(['android': 'true', 'color': 'true', 'reporter': 'checkstyle', 'insert_final_newline': 'false'])
         trimTrailingWhitespace()
     }

@@ -1,0 +1,48 @@
+# name of the work flow
+name: Build
+on: [pull_request, push]
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest]
+        jdk: [11, 14]
+    runs-on: ${{ matrix.os }}
+    env:
+      JDK_VERSION:  ${{ matrix.jdk }}
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Setup Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.jdk }}
+
+      - name: Clean build
+        run: ./gradlew clean build --stacktrace
+
+      - name: Upload Demo APK
+        uses: actions/upload-artifact@v1
+        with:
+          name: demo
+          path: app/build/outputs/apk/demo/debug/app-demo-debug.apk
+
+      - name: Upload Stage APK
+        uses: actions/upload-artifact@v1
+        with:
+          name: stage
+          path: app/build/outputs/apk/stage/debug/app-stage-debug.apk
+
+      - name: Upload Prod APK
+        uses: actions/upload-artifact@v1
+        with:
+          name: prod
+          path: app/build/outputs/apk/prod/debug/app-prod-debug.apk
+
+      - name: Build Release AAB
+        id: buildRelease
+        run: ./gradlew bundleRelease
