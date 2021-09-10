@@ -46,7 +46,7 @@
 
     <fragment
         android:id="@+id/webViewFragment"
-        android:name="ca.bc.gov.vaxcheck.ui.webview.PrivacyPolicyFragment"
+        android:name="ca.bc.gov.vaxcheck.ui.privacy.PrivacyPolicyFragment"
         android:label="fragment_web_view"
         tools:layout="@layout/fragment_privacy_policy" />
 

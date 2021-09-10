@@ -1,4 +1,4 @@
-package ca.bc.gov.vaxcheck.ui.webview
+package ca.bc.gov.vaxcheck.ui.privacy
 
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import ca.bc.gov.vaxcheck.R
 import ca.bc.gov.vaxcheck.databinding.FragmentPrivacyPolicyBinding
-import ca.bc.gov.vaxcheck.utils.Helper
+import ca.bc.gov.vaxcheck.utils.isOnline
 import ca.bc.gov.vaxcheck.utils.viewBindings
 
 
@@ -21,14 +21,10 @@ import ca.bc.gov.vaxcheck.utils.viewBindings
  */
 class PrivacyPolicyFragment : Fragment(R.layout.fragment_privacy_policy) {
 
-    private lateinit var url: String
-
     private val binding by viewBindings(FragmentPrivacyPolicyBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        url = resources.getString(R.string.url_privacy_policy)
 
         binding.btnClose.setOnClickListener {
             findNavController().popBackStack()
@@ -52,7 +48,8 @@ class PrivacyPolicyFragment : Fragment(R.layout.fragment_privacy_policy) {
     }
 
     private fun loadUrl() {
-        if (Helper().isOnline(this.requireContext())) {
+        if (requireContext().isOnline()) {
+            val url = resources.getString(R.string.url_privacy_policy)
             binding.textView.visibility = View.INVISIBLE
             if (URLUtil.isHttpsUrl(url) && !URLUtil.isFileUrl(url))
                 binding.webView.loadUrl(url)

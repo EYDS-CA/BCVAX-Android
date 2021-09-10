@@ -1,6 +1,8 @@
 package ca.bc.gov.vaxcheck.utils
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextPaint
@@ -17,6 +19,30 @@ import ca.bc.gov.vaxcheck.R
 fun Context.readJsonFromAsset(fileName: String) =
     this.assets.open(fileName).bufferedReader().use { it.readText() }
 
+/**
+ * Helper function to check if device is online or not.
+ */
+fun Context.isOnline(): Boolean {
+    val connectivityManager =
+        this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val capabilities =
+        connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+
+    if (capabilities != null) {
+
+        return when {
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+                    || capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                    || capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+            else -> false
+        }
+    }
+    return false
+}
+
+/**
+ * Helper function to convert String to clickable link.
+ */
 fun TextView.setSpannableLink(text: String? = null, onClick: () -> Unit) {
     val spannableString = SpannableString(
         if (text.isNullOrBlank()) {
