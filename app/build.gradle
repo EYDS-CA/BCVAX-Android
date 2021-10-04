@@ -14,8 +14,8 @@ android {
         applicationId "ca.bc.gov.vaxcheck"
         minSdk 27
         targetSdk 31
-        versionCode 12
-        versionName "1.0.1"
+        versionCode 13
+        versionName "1.0.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -120,6 +120,8 @@ dependencies {
     }
 
     implementation "org.bouncycastle:bcprov-jdk15on:$versions.bouncycastle"
+
+    implementation "com.google.android.play:core-ktx:$versions.play"
 
     // https://stackoverflow.com/questions/29402155/android-unit-test-not-mocked
     testImplementation 'org.json:json:20210307'

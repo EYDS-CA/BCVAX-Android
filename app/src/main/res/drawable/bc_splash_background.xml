@@ -14,7 +14,4 @@
         android:drawable="@drawable/ic_bc_app_logo_with_text"
         android:gravity="center" />
 
-    <item
-        android:drawable="@drawable/ic_bc_covid_19"
-        android:gravity="bottom" />
 </layer-list>

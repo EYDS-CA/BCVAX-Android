@@ -30,4 +30,11 @@
     <string name="no_internet">No Internet!</string>
     <string name="close">Close</string>
     <string name="no_app_found">No app found to open link!</string>
+
+    <!-- In app updates -->
+    <string name="update_success">Update Success!</string>
+    <string name="update_cancelled">Update Cancelled!</string>
+    <string name="update_failed">Update Failed!</string>
+    <string name="update_downloaded">An update has just been downloaded.</string>
+    <string name="restart">RESTART</string>
 </resources>
