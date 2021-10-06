@@ -327,8 +327,4 @@ class BarcodeScannerFragment : Fragment(R.layout.fragment_barcode_scanner), Scan
             }
             .show()
     }
-
-    companion object {
-        const val ON_BOARDING_SHOWN = "ON_BOARDING_SHOWN"
-    }
 }

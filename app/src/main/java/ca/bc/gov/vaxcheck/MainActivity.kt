@@ -28,6 +28,13 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appUpdateManager: AppUpdateManager
 
+    // listener to track request state updates.
+    private val listener = InstallStateUpdatedListener { state ->
+        if (state.installStatus == InstallStatus.DOWNLOADED) {
+            popUpSnackBarForCompleteUpdate()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -66,7 +73,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkAppUpdate() {
-        appUpdateManager = AppUpdateManagerFactory.create(applicationContext)
+        appUpdateManager = AppUpdateManagerFactory.create(this@MainActivity)
 
         // Before starting an update, register a listener for updates.
         appUpdateManager.registerListener(listener)
@@ -76,26 +83,28 @@ class MainActivity : AppCompatActivity() {
 
         // Checks that the platform will allow the specified type of update.
         appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-                && appUpdateInfo.updatePriority() < 4 /* low/medium priority */
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
             ) {
                 try {
                     appUpdateManager.startUpdateFlowForResult(
                         appUpdateInfo,
                         AppUpdateType.FLEXIBLE,
-                        this,
+                        this@MainActivity,
                         REQUEST_CODE_FLEXIBLE
                     )
                 } catch (e: Exception) {
                     Log.e(TAG, e.message.toString())
                 }
             } else if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-                && appUpdateInfo.updatePriority() >= 4 /* high priority */) {
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+            ) {
                 try {
                     appUpdateManager.startUpdateFlowForResult(
                         appUpdateInfo,
                         AppUpdateType.IMMEDIATE,
-                        this,
+                        this@MainActivity,
                         REQUEST_CODE_IMMEDIATE
                     )
                 } catch (e: Exception) {
@@ -131,17 +140,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Create a listener to track request state updates.
-    private val listener = InstallStateUpdatedListener { state ->
-        if (state.installStatus() == InstallStatus.DOWNLOADING) {
-            val bytesDownloaded = state.bytesDownloaded()
-            val totalBytesToDownload = state.totalBytesToDownload()
-            // Show update progress bar. Not required for this app
-        } else if (state.installStatus == InstallStatus.DOWNLOADED) {
-            popUpSnackBarForCompleteUpdate()
-        }
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         // When status updates are no longer needed, unregister the listener.
@@ -173,7 +171,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val REQUEST_CODE_IMMEDIATE = 1
-        private const val REQUEST_CODE_FLEXIBLE = 2
+        private const val REQUEST_CODE_IMMEDIATE = 100
+        private const val REQUEST_CODE_FLEXIBLE = 200
     }
 }
