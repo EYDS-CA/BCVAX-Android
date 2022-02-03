@@ -37,7 +37,6 @@ android {
             resValue "string", "rules_url", "https://ds9mwekyyprcy.cloudfront.net/bc-rules.json"
             resValue "string", "default_issuer_json", "phsasmarthealthcard-dev.azurewebsites.net~v1~trusted~.well-known~issuers.json"
             resValue "string", "default_rules_json", "ds9mwekyyprcy.cloudfront.net~bc-rules.json"
-            resValue "string", "deferrals_domain", "pvc.service.yukon.ca"
         }
 
         stage {
@@ -47,7 +46,6 @@ android {
             resValue "string", "rules_url", "https://phsasmarthealthcard-dev.azurewebsites.net/v1/Covid19Proof/.well-known/rules.json"
             resValue "string", "default_issuer_json", "phsasmarthealthcard-dev.azurewebsites.net~v1~trusted~.well-known~issuers.json"
             resValue "string", "default_rules_json", "phsasmarthealthcard-dev.azurewebsites.net~v1~Covid19Proof~.well-known~rules.json"
-            resValue "string", "deferrals_domain", "pvc.service.yukon.ca"
         }
 
         prod {
@@ -56,7 +54,6 @@ android {
             resValue "string", "rules_url", "https://smarthealthcard.phsa.ca/v1/Covid19Proof/.well-known/rules.json"
             resValue "string", "default_issuer_json", "smarthealthcard.phsa.ca~v1~trusted~.well-known~issuers.json"
             resValue "string", "default_rules_json", "smarthealthcard.phsa.ca~v1~Covid19Proof~.well-known~rules.json"
-            resValue "string", "deferrals_domain", "pvc.service.yukon.ca"
         }
     }
 
