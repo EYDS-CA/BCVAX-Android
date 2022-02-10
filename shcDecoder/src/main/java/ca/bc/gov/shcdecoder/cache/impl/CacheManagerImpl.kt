@@ -35,7 +35,7 @@ internal class CacheManagerImpl(
                 }
 
                 fileManager.downloadFile(shcConfig.rulesEndPoint)
-                preferenceRepository.setTimeStamp(Calendar.getInstance().timeInMillis)
+                preferenceRepository.setDefaultTimeStamp(Calendar.getInstance().timeInMillis)
             } catch (e: Exception) {
                 Log.e(TAG, e.message, e)
             }
@@ -44,7 +44,7 @@ internal class CacheManagerImpl(
 
     private suspend fun isCacheExpired(): Boolean {
         val currentTime = Calendar.getInstance()
-        val timeInMillis = preferenceRepository.timeStamp.first()
+        val timeInMillis = preferenceRepository.defaultTimeStamp.first()
         val previousTime = Calendar.getInstance()
         previousTime.timeInMillis = timeInMillis + shcConfig.cacheExpiryTimeInMilli
         return (currentTime >= previousTime)
