@@ -115,7 +115,7 @@ class SHCVerifierImpl(
         var lastVaxDate: Date? = null
 
         if (isShcExpired(expDateInSeconds)) {
-            return VaccinationStatus.INVALID
+            return VaccinationStatus.NOT_VACCINATED
         }
 
         entries
