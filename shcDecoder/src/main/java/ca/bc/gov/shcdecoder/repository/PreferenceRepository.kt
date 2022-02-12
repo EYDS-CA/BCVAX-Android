@@ -1,14 +1,18 @@
 package ca.bc.gov.shcdecoder.repository
 
 import androidx.datastore.preferences.core.Preferences
-import ca.bc.gov.shcdecoder.model.Cache
-import ca.bc.gov.shcdecoder.model.Expiry
 import kotlinx.coroutines.flow.Flow
 
 interface PreferenceRepository {
-    val defaultTimeStamp: Flow<Long>
-    suspend fun setDefaultTimeStamp(timeStamp: Long): Preferences
+    val generalTimeStamp: Flow<Long>
+    suspend fun setGeneralTimeStamp(timeStamp: Long): Preferences
 
-    val customExpiryTime: Flow<Expiry>
-    suspend fun setCustomExpiryTime(expiry: Expiry): Preferences
+    val rulesTimeStamp: Flow<Long>
+    suspend fun setRulesTimeStamp(timeStamp: Long): Preferences
+
+    val issuersTimeStamp: Flow<Long>
+    suspend fun setIssuersTimeStamp(timeStamp: Long): Preferences
+
+    val revocationsTimeStamp: Flow<Long>
+    suspend fun setRevocationsTimeStamp(timeStamp: Long): Preferences
 }
