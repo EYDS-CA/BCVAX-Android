@@ -5,15 +5,13 @@ import ca.bc.gov.shcdecoder.cache.CacheManager
 import ca.bc.gov.shcdecoder.cache.FileManager
 import ca.bc.gov.shcdecoder.repository.PreferenceRepository
 import ca.bc.gov.shcdecoder.revocations.getRevocationsUrl
-import ca.bc.gov.shcdecoder.rule.RulesManager
 import kotlinx.coroutines.flow.firstOrNull
 import java.util.Calendar
 
 internal class CacheManagerImpl(
     private val shcConfig: SHCConfig,
     private val preferenceRepository: PreferenceRepository,
-    private val fileManager: FileManager,
-    private val rulesManager: RulesManager
+    private val fileManager: FileManager
 ) : CacheManager {
 
     companion object {
@@ -23,11 +21,11 @@ internal class CacheManagerImpl(
     }
 
     override suspend fun fetch() {
-        val customExpiryTimes = rulesManager.getRule(shcConfig.issuerEndPoint)
+        val rules = fileManager.getRule(shcConfig.rulesEndPoint).firstOrNull()
 
-        val rulesExpiryTime = customExpiryTimes?.cache?.expiry?.rules?.minutesToMillis()
-        val issuersExpiryTime = customExpiryTimes?.cache?.expiry?.issuers?.minutesToMillis()
-        val revocationsExpiryTime = customExpiryTimes?.cache?.expiry?.revocations?.minutesToMillis()
+        val rulesExpiryTime = rules?.cache?.expiry?.rules?.minutesToMillis()
+        val issuersExpiryTime = rules?.cache?.expiry?.issuers?.minutesToMillis()
+        val revocationsExpiryTime = rules?.cache?.expiry?.revocations?.minutesToMillis()
 
         fetchRules(rulesExpiryTime)
         fetchIssuers(issuersExpiryTime)

@@ -25,7 +25,8 @@ internal val defaultRule = Rule(
     ruleTarget = TEST_ISS_WITH_SUFFIX,
     version = "V1",
     vaccinationRules = emptyList(),
-    exemptions = emptyList()
+    exemptions = emptyList(),
+    cache = null
 )
 
 internal val defaultKey = JwksKey(

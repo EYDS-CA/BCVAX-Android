@@ -45,7 +45,7 @@ class SHCVerifierImpl(
     private val ruleManager: RulesManager = RulesManagerImpl(shcConfig, fileManager)
     private val preferenceRepository: PreferenceRepository = PreferenceRepositoryImpl(context)
     private val cacheManager: CacheManager =
-        CacheManagerImpl(shcConfig, preferenceRepository, fileManager, ruleManager)
+        CacheManagerImpl(shcConfig, preferenceRepository, fileManager)
 
     override val config = shcConfig
 
