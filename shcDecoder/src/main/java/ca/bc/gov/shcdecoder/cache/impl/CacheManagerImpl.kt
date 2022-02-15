@@ -20,6 +20,24 @@ internal class CacheManagerImpl(
         private const val MILLIS_IN_MINUTE = 60000L
     }
 
+    /**
+     * This method downloads rules, issuers and revocations files
+     * download is controlled by time stamps
+     *
+     * <p>
+     *
+     * If any of the expiry times is null
+     * that value will be replaced by shcConfig.cacheExpiryTimeInMilli
+     * So, when rule set doesn't provides any of these expiry times
+     * It will always use shcConfig.cacheExpiryTimeInMilli by default for everything
+     *
+     * Also if any time stamp is null
+     * isCacheExpired method will take the Long Min Value for timestamp milliseconds
+     * this will make isCacheExpired return true by default
+     *
+     * @see isCacheExpired
+     *
+     */
     override suspend fun fetch() {
         val rules = fileManager.getRule(shcConfig.rulesEndPoint).firstOrNull()
 
@@ -35,8 +53,8 @@ internal class CacheManagerImpl(
     private suspend fun fetchRules(rulesExpiryTime: Long?) {
         if (
             isCacheExpired(
-                preferenceRepository.rulesTimeStamp.firstOrNull(),
-                rulesExpiryTime
+                timeStamp = preferenceRepository.rulesTimeStamp.firstOrNull(),
+                timeExpiry = rulesExpiryTime
             )
         ) {
             fileManager.downloadFile(shcConfig.rulesEndPoint)
@@ -47,8 +65,8 @@ internal class CacheManagerImpl(
     private suspend fun fetchIssuers(issuersExpiryTime: Long?) {
         if (
             isCacheExpired(
-                preferenceRepository.issuersTimeStamp.firstOrNull(),
-                issuersExpiryTime
+                timeStamp = preferenceRepository.issuersTimeStamp.firstOrNull(),
+                timeExpiry = issuersExpiryTime
             )
         ) {
             fileManager.downloadFile(shcConfig.issuerEndPoint)
@@ -67,8 +85,8 @@ internal class CacheManagerImpl(
     private suspend fun fetchRevocations(revocationsExpiryTime: Long?) {
         if (
             isCacheExpired(
-                preferenceRepository.revocationsTimeStamp.firstOrNull(),
-                revocationsExpiryTime
+                timeStamp = preferenceRepository.revocationsTimeStamp.firstOrNull(),
+                timeExpiry = revocationsExpiryTime
             )
         ) {
             fileManager.getIssuers(shcConfig.issuerEndPoint).forEach { issuer ->
