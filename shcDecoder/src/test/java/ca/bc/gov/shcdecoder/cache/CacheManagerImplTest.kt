@@ -61,6 +61,30 @@ class CacheManagerImplTest {
     }
 
     @Test
+    fun `given fetch when general cache is not expired and rules cache is expired then download rules`(): Unit = runBlocking {
+        prepareDependencies(isCacheExpired = false, isRuleCacheExpired = true)
+        prepareCacheExpiryTimes()
+        sut.fetch()
+        verify(fileManager, Times(1)).downloadFile(anyString())
+    }
+
+    @Test
+    fun `given fetch when general cache is not expired and issuers cache is expired then download rules`(): Unit = runBlocking {
+        prepareDependencies(isCacheExpired = false, isIssuersCacheExpired = true)
+        prepareCacheExpiryTimes()
+        sut.fetch()
+        verify(fileManager, Times(2)).downloadFile(anyString())
+    }
+
+    @Test
+    fun `given fetch when general cache is not expired and revocations cache is expired then download rules`(): Unit = runBlocking {
+        prepareDependencies(isCacheExpired = false, isRevocationsCacheExpired = true)
+        prepareCacheExpiryTimes()
+        sut.fetch()
+        verify(fileManager, Times(1)).downloadFile(anyString())
+    }
+
+    @Test
     fun `given fetch when general time stamp is set then file downloaded`(): Unit = runBlocking {
         prepareDependencies()
         prepareCacheExpiryTimes()
@@ -137,9 +161,9 @@ class CacheManagerImplTest {
     }
 
     private fun prepareCacheExpiryTimes(
-        rulesExpiryMinutes: String? = null,
-        issuersExpiryMinutes: String? = null,
-        revocationsExpiryMinutes: String? = null
+        rulesExpiryMinutes: String = "360",
+        issuersExpiryMinutes: String = "360",
+        revocationsExpiryMinutes: String = "360"
     ): Unit = runBlocking {
 
         doReturn(

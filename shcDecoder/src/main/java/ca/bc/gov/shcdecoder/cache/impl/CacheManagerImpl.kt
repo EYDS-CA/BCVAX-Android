@@ -42,10 +42,7 @@ internal class CacheManagerImpl(
             )
         ) {
             fileManager.downloadFile(shcConfig.rulesEndPoint)
-
-            if (rulesExpiryTime != null) {
-                preferenceRepository.setRulesTimeStamp(Calendar.getInstance().timeInMillis)
-            }
+            preferenceRepository.setRulesTimeStamp(Calendar.getInstance().timeInMillis)
         }
     }
 
@@ -58,17 +55,13 @@ internal class CacheManagerImpl(
         ) {
             fileManager.downloadFile(shcConfig.issuerEndPoint)
             fetchKeys()
-
-            if (issuersExpiryTime != null) {
-                preferenceRepository.setIssuersTimeStamp(Calendar.getInstance().timeInMillis)
-            }
+            preferenceRepository.setIssuersTimeStamp(Calendar.getInstance().timeInMillis)
         }
     }
 
     private suspend fun fetchKeys() {
         fileManager.getIssuers(shcConfig.issuerEndPoint).forEach {
             val keyUrl = getKeyUrl(it.iss)
-
             fileManager.downloadFile(keyUrl)
         }
     }
@@ -88,10 +81,7 @@ internal class CacheManagerImpl(
                     fileManager.downloadFile(revocationURL)
                 }
             }
-
-            if (revocationsExpiryTime != null) {
-                preferenceRepository.setRevocationsTimeStamp(Calendar.getInstance().timeInMillis)
-            }
+            preferenceRepository.setRevocationsTimeStamp(Calendar.getInstance().timeInMillis)
         }
     }
 
