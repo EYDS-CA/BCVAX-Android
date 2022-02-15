@@ -53,32 +53,48 @@ class CacheManagerImplTest {
     }
 
     @Test
-    fun `given fetch when general and others cache is not expired then do nothing`(): Unit = runBlocking {
-        prepareDependencies(isCacheExpired = false)
+    fun `given fetch when all cache is not expired then do nothing`(): Unit = runBlocking {
+        prepareDependencies(
+            isRuleCacheExpired = false,
+            isIssuersCacheExpired = false,
+            isRevocationsCacheExpired = false
+        )
         prepareCacheExpiryTimes()
         sut.fetch()
         verify(fileManager, Times(0)).downloadFile(anyString())
     }
 
     @Test
-    fun `given fetch when general cache is not expired and rules cache is expired then download rules`(): Unit = runBlocking {
-        prepareDependencies(isCacheExpired = false, isRuleCacheExpired = true)
+    fun `given fetch when rules cache is expired then download rules`(): Unit = runBlocking {
+        prepareDependencies(
+            isRuleCacheExpired = true,
+            isIssuersCacheExpired = false,
+            isRevocationsCacheExpired = false
+        )
         prepareCacheExpiryTimes()
         sut.fetch()
         verify(fileManager, Times(1)).downloadFile(anyString())
     }
 
     @Test
-    fun `given fetch when general cache is not expired and issuers cache is expired then download rules`(): Unit = runBlocking {
-        prepareDependencies(isCacheExpired = false, isIssuersCacheExpired = true)
+    fun `given fetch when issuers cache is expired then download issuers`(): Unit = runBlocking {
+        prepareDependencies(
+            isRuleCacheExpired = false,
+            isIssuersCacheExpired = true,
+            isRevocationsCacheExpired = false
+        )
         prepareCacheExpiryTimes()
         sut.fetch()
         verify(fileManager, Times(2)).downloadFile(anyString())
     }
 
     @Test
-    fun `given fetch when general cache is not expired and revocations cache is expired then download rules`(): Unit = runBlocking {
-        prepareDependencies(isCacheExpired = false, isRevocationsCacheExpired = true)
+    fun `given fetch when revocations cache is expired then download revocations`(): Unit = runBlocking {
+        prepareDependencies(
+            isRuleCacheExpired = false,
+            isIssuersCacheExpired = false,
+            isRevocationsCacheExpired = true
+        )
         prepareCacheExpiryTimes()
         sut.fetch()
         verify(fileManager, Times(1)).downloadFile(anyString())
@@ -89,7 +105,6 @@ class CacheManagerImplTest {
         prepareDependencies()
         prepareCacheExpiryTimes()
         sut.fetch()
-        verify(preferenceRepository).setGeneralTimeStamp(anyLong())
         verify(fileManager, atLeast(3)).downloadFile(anyString())
     }
 
@@ -98,21 +113,15 @@ class CacheManagerImplTest {
         prepareDependencies()
         prepareCacheExpiryTimes()
         sut.fetch()
-        verify(preferenceRepository).setGeneralTimeStamp(anyLong())
         verify(fileManager, atLeast(3)).downloadFile(anyString())
     }
 
     private fun prepareDependencies(
-        isCacheExpired: Boolean = true,
         isIssuerWithSuffix: Boolean = false,
         isRuleCacheExpired: Boolean? = null,
         isIssuersCacheExpired: Boolean? = null,
         isRevocationsCacheExpired: Boolean? = null
     ): Unit = runBlocking {
-        doReturn(
-            prepareTimeStampFlow(isCacheExpired)
-        ).`when`(preferenceRepository).generalTimeStamp
-
         doReturn(
             prepareTimeStampFlow(isRuleCacheExpired)
         ).`when`(preferenceRepository).rulesTimeStamp

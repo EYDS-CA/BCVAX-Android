@@ -30,8 +30,6 @@ internal class CacheManagerImpl(
         fetchRules(rulesExpiryTime)
         fetchIssuers(issuersExpiryTime)
         fetchRevocations(revocationsExpiryTime)
-
-        preferenceRepository.setGeneralTimeStamp(Calendar.getInstance().timeInMillis)
     }
 
     private suspend fun fetchRules(rulesExpiryTime: Long?) {
@@ -93,11 +91,11 @@ internal class CacheManagerImpl(
         }
     }
 
-    private suspend fun isCacheExpired(
+    private fun isCacheExpired(
         timeStamp: Long?,
         timeExpiry: Long?
     ): Boolean {
-        val finalTimeStamp = timeStamp ?: preferenceRepository.generalTimeStamp.firstOrNull() ?: Long.MIN_VALUE
+        val finalTimeStamp = timeStamp ?: Long.MIN_VALUE
         val finalTimeExpiry = timeExpiry ?: shcConfig.cacheExpiryTimeInMilli
 
         val currentTime = Calendar.getInstance()
