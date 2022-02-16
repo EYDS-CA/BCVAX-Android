@@ -7,11 +7,10 @@ import java.util.Date
 
 class RevocationManagerImpl(
     private val fileManager: FileManager
-): RevocationManager {
+) : RevocationManager {
 
-    override suspend fun getRevocations(iss: String, kid: String): List<Pair<String, Date?>>{
+    override suspend fun getRevocations(iss: String, kid: String): List<Pair<String, Date?>> {
         val url = getRevocationsUrl(iss, kid)
         return fileManager.getRevocations(url)
     }
-
 }

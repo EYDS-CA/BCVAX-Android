@@ -19,7 +19,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
 import org.mockito.Mockito.atLeast
@@ -142,7 +141,6 @@ class CacheManagerImplTest {
                 )
             )
         ).`when`(fileManager).getIssuers(anyString())
-
 
         doReturn(
             listOf(

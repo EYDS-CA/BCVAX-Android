@@ -50,5 +50,4 @@ class PreferenceRepositoryImpl(
     override suspend fun setIssuersTimeStamp(timeStamp: Long) = context.saveToStore(CACHED_ISSUERS_TIME_STAMP, timeStamp)
 
     override suspend fun setRevocationsTimeStamp(timeStamp: Long) = context.saveToStore(CACHED_REVOCATIONS_TIME_STAMP, timeStamp)
-
 }
