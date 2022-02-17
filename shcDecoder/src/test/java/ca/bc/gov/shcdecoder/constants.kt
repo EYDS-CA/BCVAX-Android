@@ -36,7 +36,8 @@ internal val defaultKey = JwksKey(
     crv = "P-256",
     x = "11XvRWy1I2S0EyJlyf_bWfw_TQ5CJJNLw78bHXNxcgw",
     y = "eZXwxvO1hvCY0KucrPfKo7yAyMT6Ajc3N7OkAB6VYy8",
-    x5c = emptyList()
+    x5c = emptyList(),
+    ctr = 1L
 )
 
 internal val config = SHCConfig(
