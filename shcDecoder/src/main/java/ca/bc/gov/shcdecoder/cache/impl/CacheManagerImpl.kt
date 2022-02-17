@@ -6,7 +6,7 @@ import ca.bc.gov.shcdecoder.cache.FileManager
 import ca.bc.gov.shcdecoder.model.Issuer
 import ca.bc.gov.shcdecoder.model.JwksKey
 import ca.bc.gov.shcdecoder.repository.PreferenceRepository
-import ca.bc.gov.shcdecoder.revocations.getRevocationsUrl
+import ca.bc.gov.shcdecoder.revocations.impl.RevocationManagerImpl.RevocationManager.getRevocationsUrl
 import kotlinx.coroutines.flow.first
 import java.util.Calendar
 
@@ -57,7 +57,7 @@ internal class CacheManagerImpl(
             val revocationsURL = getRevocationsUrl(issuer.iss, key.kid)
 
             if (fileManager.exists(revocationsURL)) {
-                val ctr = fileManager.getRevocationsCtr(revocationsURL)
+                val ctr = fileManager.getRevocations(revocationsURL)?.ctr
                 if (ctr != key.ctr) {
                     fileManager.downloadFile(revocationsURL)
                 }

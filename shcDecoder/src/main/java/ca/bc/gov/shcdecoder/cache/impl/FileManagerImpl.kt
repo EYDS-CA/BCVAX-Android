@@ -10,16 +10,13 @@ import ca.bc.gov.shcdecoder.model.RevocationsResponse
 import ca.bc.gov.shcdecoder.model.Rule
 import ca.bc.gov.shcdecoder.model.TrustedIssuersResponse
 import ca.bc.gov.shcdecoder.model.ValidationRuleResponse
-import ca.bc.gov.shcdecoder.utils.epochToDate
 import com.google.gson.Gson
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
-import java.util.Date
 
 class FileManagerImpl(
-    context: Context,
-    private val gson: Gson
+    context: Context
 ) : FileManager {
 
     private val downloadDir: File = File(context.filesDir, "Decoder")
@@ -77,21 +74,8 @@ class FileManagerImpl(
         return validationRulesResponse?.ruleSet.orEmpty()
     }
 
-    override suspend fun getRevocations(url: String): List<Pair<String, Date?>> {
-        val revocationsResponse = getDataFromFile(url, RevocationsResponse::class.java)
-        return revocationsResponse?.rids?.map { rid ->
-            if (rid.contains(".") && (rid.startsWith(".").not() && rid.endsWith(".").not())) {
-                val ridSplit = rid.split(".")
-                ridSplit.first() to ridSplit[1].epochToDate()
-            } else {
-                rid to null
-            }
-        }.orEmpty()
-    }
-
-    override suspend fun getRevocationsCtr(url: String): Long? {
-        val revocationsResponse = getDataFromFile(url, RevocationsResponse::class.java)
-        return revocationsResponse?.ctr
+    override suspend fun getRevocations(url: String): RevocationsResponse? {
+        return getDataFromFile(url, RevocationsResponse::class.java)
     }
 
     override suspend fun exists(url: String) =
@@ -103,7 +87,7 @@ class FileManagerImpl(
             val file = File(downloadDir, fileName)
             val bufferedReader = file.bufferedReader()
             val json = bufferedReader.use { it.readText() }
-            gson.fromJson(json, classType)
+            Gson().fromJson(json, classType)
         } catch (exception: Exception) {
             exception.printStackTrace()
             return null

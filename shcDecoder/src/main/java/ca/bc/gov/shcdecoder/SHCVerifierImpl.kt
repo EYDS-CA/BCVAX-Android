@@ -40,7 +40,7 @@ class SHCVerifierImpl(
 
     private val shcParser: SHCParser = SHCParserImpl()
     private val jwksValidator: JWKSValidator = JWKSValidatorImpl()
-    private val fileManager: FileManager = FileManagerImpl(context, Gson())
+    private val fileManager: FileManager = FileManagerImpl(context)
     private val revocationManager: RevocationManager = RevocationManagerImpl(fileManager)
     private val keyManager: KeyManager = KeyManagerImpl(shcConfig, fileManager)
     private val ruleManager: RulesManager = RulesManagerImpl(shcConfig, fileManager)
