@@ -22,17 +22,21 @@ internal class CacheManagerImpl(
     }
 
     override suspend fun fetch() {
-        if (isCacheExpired()) {
-            fileManager.downloadFile(shcConfig.rulesEndPoint)
+        try {
+            if (isCacheExpired()) {
+                fileManager.downloadFile(shcConfig.rulesEndPoint)
 
-            val issuers = fetchIssuers()
+                val issuers = fetchIssuers()
 
-            issuers.forEach { issuer ->
-                val keys = fetchKeys(issuer)
-                fetchRevocations(issuer, keys)
+                issuers.forEach { issuer ->
+                    val keys = fetchKeys(issuer)
+                    fetchRevocations(issuer, keys)
+                }
+
+                preferenceRepository.setTimeStamp(Calendar.getInstance().timeInMillis)
             }
-
-            preferenceRepository.setTimeStamp(Calendar.getInstance().timeInMillis)
+        } catch (exception: Exception) {
+            exception.printStackTrace()
         }
     }
 
