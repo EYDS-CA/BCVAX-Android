@@ -26,7 +26,6 @@ import ca.bc.gov.shcdecoder.utils.inclusiveAfter
 import ca.bc.gov.shcdecoder.utils.toDate
 import ca.bc.gov.shcdecoder.validator.JWKSValidator
 import ca.bc.gov.shcdecoder.validator.impl.JWKSValidatorImpl
-import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

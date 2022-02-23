@@ -4,7 +4,6 @@ import ca.bc.gov.shcdecoder.model.Issuer
 import ca.bc.gov.shcdecoder.model.JwksKey
 import ca.bc.gov.shcdecoder.model.RevocationsResponse
 import ca.bc.gov.shcdecoder.model.Rule
-import java.util.Date
 
 interface FileManager {
 
