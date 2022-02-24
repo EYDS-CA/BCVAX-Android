@@ -4,8 +4,8 @@ import ca.bc.gov.shcdecoder.SHCConfig
 import ca.bc.gov.shcdecoder.cache.CacheManager
 import ca.bc.gov.shcdecoder.cache.FileManager
 import ca.bc.gov.shcdecoder.repository.PreferenceRepository
-import kotlinx.coroutines.flow.firstOrNull
 import ca.bc.gov.shcdecoder.revocations.impl.RevocationManagerImpl.RevocationManager.getRevocationsUrl
+import kotlinx.coroutines.flow.firstOrNull
 import java.util.Calendar
 
 internal class CacheManagerImpl(
