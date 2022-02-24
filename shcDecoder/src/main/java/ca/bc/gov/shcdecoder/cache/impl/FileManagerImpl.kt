@@ -6,6 +6,7 @@ import ca.bc.gov.shcdecoder.cache.FileManager
 import ca.bc.gov.shcdecoder.model.Issuer
 import ca.bc.gov.shcdecoder.model.Jwks
 import ca.bc.gov.shcdecoder.model.JwksKey
+import ca.bc.gov.shcdecoder.model.RevocationsResponse
 import ca.bc.gov.shcdecoder.model.Rule
 import ca.bc.gov.shcdecoder.model.TrustedIssuersResponse
 import ca.bc.gov.shcdecoder.model.ValidationRuleResponse
@@ -59,29 +60,38 @@ class FileManagerImpl(
     }
 
     override suspend fun getIssuers(url: String): List<Issuer> {
-        val jsonString = getJsonStringFromFile(url)
-        val issuerResponse = Gson().fromJson(jsonString, TrustedIssuersResponse::class.java)
-        return issuerResponse.trustedIssuers
+        val issuerResponse = getDataFromFile(url, TrustedIssuersResponse::class.java)
+        return issuerResponse?.trustedIssuers.orEmpty()
     }
 
     override suspend fun getKeys(url: String): List<JwksKey> {
-        val jsonString = getJsonStringFromFile(url)
-        val keyResponse = Gson().fromJson(jsonString, Jwks::class.java)
-        return keyResponse.keys
+        val keyResponse = getDataFromFile(url, Jwks::class.java)
+        return keyResponse?.keys.orEmpty()
     }
 
     override suspend fun getRule(url: String): List<Rule> {
-        val jsonString = getJsonStringFromFile(url)
-        val validationRulesResponse =
-            Gson().fromJson(jsonString, ValidationRuleResponse::class.java)
-        return validationRulesResponse.ruleSet
+        val validationRulesResponse = getDataFromFile(url, ValidationRuleResponse::class.java)
+        return validationRulesResponse?.ruleSet.orEmpty()
     }
 
-    private fun getJsonStringFromFile(url: String): String {
-        val fileName = getFileNameFromUrl(url)
-        val file = File(downloadDir, fileName)
-        val bufferedReader = file.bufferedReader()
-        return bufferedReader.use { it.readText() }
+    override suspend fun getRevocations(url: String): RevocationsResponse? {
+        return getDataFromFile(url, RevocationsResponse::class.java)
+    }
+
+    override suspend fun exists(url: String) =
+        File(downloadDir, getFileNameFromUrl(url)).exists()
+
+    private fun <T> getDataFromFile(url: String, classType: Class<T>): T? {
+        return try {
+            val fileName = getFileNameFromUrl(url)
+            val file = File(downloadDir, fileName)
+            val bufferedReader = file.bufferedReader()
+            val json = bufferedReader.use { it.readText() }
+            Gson().fromJson(json, classType)
+        } catch (exception: Exception) {
+            exception.printStackTrace()
+            return null
+        }
     }
 
     private fun getFileNameFromUrl(url: String) = url.removePrefix("https://")

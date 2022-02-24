@@ -5,6 +5,7 @@ import ca.bc.gov.shcdecoder.TEST_ISS
 import ca.bc.gov.shcdecoder.TEST_ISS_WITH_SUFFIX
 import ca.bc.gov.shcdecoder.cache.impl.CacheManagerImpl
 import ca.bc.gov.shcdecoder.config
+import ca.bc.gov.shcdecoder.defaultKey
 import ca.bc.gov.shcdecoder.model.Issuer
 import ca.bc.gov.shcdecoder.repository.PreferenceRepository
 import io.mockk.every
@@ -18,10 +19,10 @@ import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
 import org.mockito.Mockito
+import org.mockito.Mockito.atLeast
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
-import org.mockito.internal.verification.Times
 import org.mockito.junit.MockitoJUnitRunner
 import java.util.Calendar
 
@@ -59,7 +60,7 @@ class CacheManagerImplTest {
         prepareDependencies()
         sut.fetch()
         verify(preferenceRepository).setTimeStamp(anyLong())
-        verify(fileManager, Times(3)).downloadFile(anyString())
+        verify(fileManager, atLeast(3)).downloadFile(anyString())
     }
 
     @Test
@@ -67,7 +68,7 @@ class CacheManagerImplTest {
         prepareDependencies()
         sut.fetch()
         verify(preferenceRepository).setTimeStamp(anyLong())
-        verify(fileManager, Times(3)).downloadFile(anyString())
+        verify(fileManager, atLeast(3)).downloadFile(anyString())
     }
 
     private fun prepareDependencies(isCacheExpired: Boolean = true, isIssuerWithSuffix: Boolean = false): Unit = runBlocking {
@@ -84,6 +85,16 @@ class CacheManagerImplTest {
                 )
             }
         ).`when`(preferenceRepository).timeStamp
+
+        doReturn(
+            listOf(
+                defaultKey
+            )
+        ).`when`(fileManager).getKeys(anyString())
+
+        doReturn(
+            false
+        ).`when`(fileManager).exists(anyString())
 
         doReturn(
             listOf(
