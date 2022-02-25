@@ -39,15 +39,19 @@ internal class CacheManagerImpl(
      *
      */
     override suspend fun fetch() {
-        val rules = fileManager.getRule(shcConfig.rulesEndPoint).firstOrNull()
+        try {
+            val rules = fileManager.getRule(shcConfig.rulesEndPoint).firstOrNull()
 
-        val rulesExpiryTime = rules?.cache?.expiry?.rules?.minutesToMillis()
-        val issuersExpiryTime = rules?.cache?.expiry?.issuers?.minutesToMillis()
-        val revocationsExpiryTime = rules?.cache?.expiry?.revocations?.minutesToMillis()
+            val rulesExpiryTime = rules?.cache?.expiry?.rules?.minutesToMillis()
+            val issuersExpiryTime = rules?.cache?.expiry?.issuers?.minutesToMillis()
+            val revocationsExpiryTime = rules?.cache?.expiry?.revocations?.minutesToMillis()
 
-        fetchRules(rulesExpiryTime)
-        fetchIssuers(issuersExpiryTime)
-        fetchRevocations(revocationsExpiryTime)
+            fetchRules(rulesExpiryTime)
+            fetchIssuers(issuersExpiryTime)
+            fetchRevocations(revocationsExpiryTime)
+        } catch (exception: Exception) {
+            exception.printStackTrace()
+        }
     }
 
     private suspend fun fetchRules(rulesExpiryTime: Long?) {
