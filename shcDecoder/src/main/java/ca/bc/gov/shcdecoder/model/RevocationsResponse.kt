@@ -17,6 +17,6 @@ data class RevocationsResponse(
             } else {
                 rid to null
             }
-        }.orEmpty()
+        }
     }
 }

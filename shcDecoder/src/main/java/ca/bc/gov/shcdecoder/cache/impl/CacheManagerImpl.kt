@@ -3,11 +3,9 @@ package ca.bc.gov.shcdecoder.cache.impl
 import ca.bc.gov.shcdecoder.SHCConfig
 import ca.bc.gov.shcdecoder.cache.CacheManager
 import ca.bc.gov.shcdecoder.cache.FileManager
-import ca.bc.gov.shcdecoder.model.Issuer
-import ca.bc.gov.shcdecoder.model.JwksKey
 import ca.bc.gov.shcdecoder.repository.PreferenceRepository
 import ca.bc.gov.shcdecoder.revocations.impl.RevocationManagerImpl.RevocationManager.getRevocationsUrl
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import java.util.Calendar
 
 internal class CacheManagerImpl(
@@ -19,63 +17,119 @@ internal class CacheManagerImpl(
     companion object {
         const val SUFFIX_JWKS_JSON = "/.well-known/jwks.json"
         const val SUFFIX_ISSUER_JSON = "issuers.json"
+        private const val MILLIS_IN_MINUTE = 60000L
     }
 
+    /**
+     * This method downloads rules, issuers and revocations files
+     * download is controlled by time stamps
+     *
+     * <p>
+     *
+     * If any of the expiry times is null
+     * that value will be replaced by shcConfig.cacheExpiryTimeInMilli
+     * So, when rule set doesn't provides any of these expiry times
+     * It will always use shcConfig.cacheExpiryTimeInMilli by default for everything
+     *
+     * Also if any time stamp is null
+     * isCacheExpired method will take the Long Min Value for timestamp milliseconds
+     * this will make isCacheExpired return true by default
+     *
+     * @see isCacheExpired
+     *
+     */
     override suspend fun fetch() {
         try {
-            if (isCacheExpired()) {
-                fileManager.downloadFile(shcConfig.rulesEndPoint)
+            val rules = fileManager.getRule(shcConfig.rulesEndPoint).firstOrNull()
 
-                val issuers = fetchIssuers()
+            val rulesExpiryTime = rules?.cache?.expiry?.rules?.minutesToMillis()
+            val issuersExpiryTime = rules?.cache?.expiry?.issuers?.minutesToMillis()
+            val revocationsExpiryTime = rules?.cache?.expiry?.revocations?.minutesToMillis()
 
-                issuers.forEach { issuer ->
-                    val keys = fetchKeys(issuer)
-                    fetchRevocations(issuer, keys)
-                }
-
-                preferenceRepository.setTimeStamp(Calendar.getInstance().timeInMillis)
-            }
+            fetchRules(rulesExpiryTime)
+            fetchIssuers(issuersExpiryTime)
+            fetchRevocations(revocationsExpiryTime)
         } catch (exception: Exception) {
             exception.printStackTrace()
         }
     }
 
-    private suspend fun fetchIssuers(): List<Issuer> {
-        fileManager.downloadFile(shcConfig.issuerEndPoint)
-        return fileManager.getIssuers(shcConfig.issuerEndPoint)
-    }
-
-    private suspend fun fetchKeys(issuer: Issuer): List<JwksKey> {
-        val keyUrl = if (issuer.iss.endsWith(SUFFIX_JWKS_JSON)) {
-            issuer.iss
-        } else {
-            "${issuer.iss}$SUFFIX_JWKS_JSON"
+    private suspend fun fetchRules(rulesExpiryTime: Long?) {
+        if (
+            isCacheExpired(
+                timeStamp = preferenceRepository.rulesTimeStamp.firstOrNull(),
+                timeExpiry = rulesExpiryTime
+            )
+        ) {
+            fileManager.downloadFile(shcConfig.rulesEndPoint)
+            preferenceRepository.setRulesTimeStamp(Calendar.getInstance().timeInMillis)
         }
-
-        fileManager.downloadFile(keyUrl)
-        return fileManager.getKeys(keyUrl)
     }
 
-    private suspend fun fetchRevocations(issuer: Issuer, keys: List<JwksKey>) {
-        keys.forEach { key ->
-            val revocationsURL = getRevocationsUrl(issuer.iss, key.kid)
+    private suspend fun fetchIssuers(issuersExpiryTime: Long?) {
+        if (
+            isCacheExpired(
+                timeStamp = preferenceRepository.issuersTimeStamp.firstOrNull(),
+                timeExpiry = issuersExpiryTime
+            )
+        ) {
+            fileManager.downloadFile(shcConfig.issuerEndPoint)
+            fetchKeys()
+            preferenceRepository.setIssuersTimeStamp(Calendar.getInstance().timeInMillis)
+        }
+    }
 
-            if (fileManager.exists(revocationsURL)) {
-                val ctr = fileManager.getRevocations(revocationsURL)?.ctr
-                if (ctr != key.ctr) {
-                    fileManager.downloadFile(revocationsURL)
+    private suspend fun fetchKeys() {
+        fileManager.getIssuers(shcConfig.issuerEndPoint).forEach {
+            val keyUrl = getKeyUrl(it.iss)
+            fileManager.downloadFile(keyUrl)
+        }
+    }
+
+    private suspend fun fetchRevocations(revocationsExpiryTime: Long?) {
+        if (
+            isCacheExpired(
+                timeStamp = preferenceRepository.revocationsTimeStamp.firstOrNull(),
+                timeExpiry = revocationsExpiryTime
+            )
+        ) {
+            fileManager.getIssuers(shcConfig.issuerEndPoint).forEach { issuer ->
+                val keyUrl = getKeyUrl(issuer.iss)
+
+                fileManager.getKeys(keyUrl).forEach { key ->
+                    val revocationURL = getRevocationsUrl(issuer.iss, key.kid)
+                    fileManager.downloadFile(revocationURL)
                 }
-            } else {
-                fileManager.downloadFile(revocationsURL)
             }
+            preferenceRepository.setRevocationsTimeStamp(Calendar.getInstance().timeInMillis)
         }
     }
 
-    private suspend fun isCacheExpired(): Boolean {
+    private fun getKeyUrl(iss: String): String {
+        return if (iss.endsWith(SUFFIX_JWKS_JSON)) {
+            iss
+        } else {
+            "$iss$SUFFIX_JWKS_JSON"
+        }
+    }
+
+    private fun isCacheExpired(
+        timeStamp: Long?,
+        timeExpiry: Long?
+    ): Boolean {
+        val finalTimeStamp = timeStamp ?: Long.MIN_VALUE
+        val finalTimeExpiry = timeExpiry ?: shcConfig.cacheExpiryTimeInMilli
+
         val currentTime = Calendar.getInstance()
-        val timeInMillis = preferenceRepository.timeStamp.first()
         val previousTime = Calendar.getInstance()
-        previousTime.timeInMillis = timeInMillis + shcConfig.cacheExpiryTimeInMilli
+
+        previousTime.timeInMillis = finalTimeStamp + finalTimeExpiry
         return (currentTime >= previousTime)
+    }
+
+    private fun String?.minutesToMillis(): Long? {
+        return this?.toLongOrNull()?.let {
+            it * MILLIS_IN_MINUTE
+        }
     }
 }

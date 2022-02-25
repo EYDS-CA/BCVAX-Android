@@ -13,5 +13,6 @@ data class Rule(
     val ruleTarget: String,
     val version: String,
     val vaccinationRules: List<VaccineRule>,
-    val exemptions: List<Exemptions?>?
+    val exemptions: List<Exemptions?>?,
+    val cache: Cache?
 )

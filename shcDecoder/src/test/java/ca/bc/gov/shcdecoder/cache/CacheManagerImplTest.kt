@@ -6,23 +6,26 @@ import ca.bc.gov.shcdecoder.TEST_ISS_WITH_SUFFIX
 import ca.bc.gov.shcdecoder.cache.impl.CacheManagerImpl
 import ca.bc.gov.shcdecoder.config
 import ca.bc.gov.shcdecoder.defaultKey
+import ca.bc.gov.shcdecoder.defaultRule
+import ca.bc.gov.shcdecoder.model.Cache
+import ca.bc.gov.shcdecoder.model.Expiry
 import ca.bc.gov.shcdecoder.model.Issuer
 import ca.bc.gov.shcdecoder.repository.PreferenceRepository
 import io.mockk.every
 import io.mockk.mockkStatic
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.atLeast
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
+import org.mockito.internal.verification.Times
 import org.mockito.junit.MockitoJUnitRunner
 import java.util.Calendar
 
@@ -49,52 +52,86 @@ class CacheManagerImplTest {
     }
 
     @Test
-    fun `given fetch when cache is not expired then do nothing`(): Unit = runBlocking {
-        prepareDependencies(isCacheExpired = false)
+    fun `given fetch when all cache is not expired then do nothing`(): Unit = runBlocking {
+        prepareDependencies(
+            isRuleCacheExpired = false,
+            isIssuersCacheExpired = false,
+            isRevocationsCacheExpired = false
+        )
+        prepareCacheExpiryTimes()
         sut.fetch()
-        Mockito.verifyNoInteractions(fileManager)
+        verify(fileManager, Times(0)).downloadFile(anyString())
     }
 
     @Test
-    fun `given fetch when issuers are correct then time stamp is set and file downloaded`(): Unit = runBlocking {
-        prepareDependencies()
+    fun `given fetch when rules cache is expired then download rules`(): Unit = runBlocking {
+        prepareDependencies(
+            isRuleCacheExpired = true,
+            isIssuersCacheExpired = false,
+            isRevocationsCacheExpired = false
+        )
+        prepareCacheExpiryTimes()
         sut.fetch()
-        verify(preferenceRepository).setTimeStamp(anyLong())
+        verify(fileManager, Times(1)).downloadFile(anyString())
+    }
+
+    @Test
+    fun `given fetch when issuers cache is expired then download issuers`(): Unit = runBlocking {
+        prepareDependencies(
+            isRuleCacheExpired = false,
+            isIssuersCacheExpired = true,
+            isRevocationsCacheExpired = false
+        )
+        prepareCacheExpiryTimes()
+        sut.fetch()
+        verify(fileManager, Times(2)).downloadFile(anyString())
+    }
+
+    @Test
+    fun `given fetch when revocations cache is expired then download revocations`(): Unit = runBlocking {
+        prepareDependencies(
+            isRuleCacheExpired = false,
+            isIssuersCacheExpired = false,
+            isRevocationsCacheExpired = true
+        )
+        prepareCacheExpiryTimes()
+        sut.fetch()
+        verify(fileManager, Times(1)).downloadFile(anyString())
+    }
+
+    @Test
+    fun `given fetch when general time stamp is set then file downloaded`(): Unit = runBlocking {
+        prepareDependencies()
+        prepareCacheExpiryTimes()
+        sut.fetch()
         verify(fileManager, atLeast(3)).downloadFile(anyString())
     }
 
     @Test
     fun `given fetch when issuers are correct and have defined suffix then time stamp is set and file downloaded`(): Unit = runBlocking {
         prepareDependencies()
+        prepareCacheExpiryTimes()
         sut.fetch()
-        verify(preferenceRepository).setTimeStamp(anyLong())
         verify(fileManager, atLeast(3)).downloadFile(anyString())
     }
 
-    private fun prepareDependencies(isCacheExpired: Boolean = true, isIssuerWithSuffix: Boolean = false): Unit = runBlocking {
+    private fun prepareDependencies(
+        isIssuerWithSuffix: Boolean = false,
+        isRuleCacheExpired: Boolean? = null,
+        isIssuersCacheExpired: Boolean? = null,
+        isRevocationsCacheExpired: Boolean? = null
+    ): Unit = runBlocking {
         doReturn(
-            flow {
-                emit(
-                    Calendar.getInstance().apply {
-                        if (isCacheExpired) {
-                            set(2000, 1, 1)
-                        } else {
-                            set(999999, 1, 1)
-                        }
-                    }.timeInMillis
-                )
-            }
-        ).`when`(preferenceRepository).timeStamp
+            prepareTimeStampFlow(isRuleCacheExpired)
+        ).`when`(preferenceRepository).rulesTimeStamp
 
         doReturn(
-            listOf(
-                defaultKey
-            )
-        ).`when`(fileManager).getKeys(anyString())
+            prepareTimeStampFlow(isIssuersCacheExpired)
+        ).`when`(preferenceRepository).issuersTimeStamp
 
         doReturn(
-            false
-        ).`when`(fileManager).exists(anyString())
+            prepareTimeStampFlow(isRevocationsCacheExpired)
+        ).`when`(preferenceRepository).revocationsTimeStamp
 
         doReturn(
             listOf(
@@ -105,6 +142,49 @@ class CacheManagerImplTest {
             )
         ).`when`(fileManager).getIssuers(anyString())
 
+        doReturn(
+            listOf(
+                defaultKey
+            )
+        ).`when`(fileManager).getKeys(anyString())
+
         every { Log.e(any(), any(), any()) } returns 0
+    }
+
+    private fun prepareTimeStampFlow(isExpired: Boolean?): Flow<Long?> {
+        return flow {
+            emit(
+                isExpired?.let {
+                    Calendar.getInstance().apply {
+                        if (isExpired) {
+                            set(2000, 1, 1)
+                        } else {
+                            set(999999, 1, 1)
+                        }
+                    }.timeInMillis
+                }
+            )
+        }
+    }
+
+    private fun prepareCacheExpiryTimes(
+        rulesExpiryMinutes: String = "360",
+        issuersExpiryMinutes: String = "360",
+        revocationsExpiryMinutes: String = "360"
+    ): Unit = runBlocking {
+
+        doReturn(
+            listOf(
+                defaultRule.copy(
+                    cache = Cache(
+                        expiry = Expiry(
+                            rules = rulesExpiryMinutes,
+                            issuers = issuersExpiryMinutes,
+                            revocations = revocationsExpiryMinutes
+                        )
+                    )
+                )
+            )
+        ).`when`(fileManager).getRule(anyString())
     }
 }
