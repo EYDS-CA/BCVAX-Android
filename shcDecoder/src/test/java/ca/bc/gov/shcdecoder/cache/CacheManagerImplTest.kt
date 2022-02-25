@@ -135,16 +135,6 @@ class CacheManagerImplTest {
 
         doReturn(
             listOf(
-                defaultKey
-            )
-        ).`when`(fileManager).getKeys(anyString())
-
-        doReturn(
-            false
-        ).`when`(fileManager).exists(anyString())
-
-        doReturn(
-            listOf(
                 Issuer(
                     iss = if (isIssuerWithSuffix) TEST_ISS_WITH_SUFFIX else TEST_ISS,
                     name = "Dev Freshworks"
