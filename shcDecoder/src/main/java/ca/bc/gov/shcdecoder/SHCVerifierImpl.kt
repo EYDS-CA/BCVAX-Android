@@ -94,7 +94,7 @@ class SHCVerifierImpl(
 
         when {
             isRevocated(shcData.payload.vc.rid, revocations) ->
-                return Pair(VaccinationStatus.INVALID, shcData)
+                return Pair(VaccinationStatus.NOT_VACCINATED, shcData)
 
             hasSpecialCondition(entries, shcData.payload.iss, rule) ->
                 return Pair(VaccinationStatus.FULLY_VACCINATED, shcData)
