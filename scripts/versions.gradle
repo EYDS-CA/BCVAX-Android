@@ -47,5 +47,11 @@ versions.android_x_test="1.4.0"
 versions.mockito="4.1.0"
 versions.mockk="1.12.2"
 
+versions.compose_activity = "1.4.0"
+versions.compose_material = "1.1.1"
+versions.compose_tooling = "1.1.1"
+versions.compose_animation = "1.1.1"
+versions.compose_viewmodel = "2.4.1"
+versions.compose_mdc = "1.1.6"
 
 ext.versions = versions
