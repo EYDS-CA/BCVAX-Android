@@ -68,6 +68,11 @@ android {
 
     buildFeatures {
         viewBinding true
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.1.1'
     }
 
     testOptions {
@@ -142,4 +147,15 @@ dependencies {
 
     //DataStore
     implementation "androidx.datastore:datastore-preferences:$versions.datastore"
+
+    //COMPOSE
+    implementation "androidx.activity:activity-compose:$versions.compose_activity"
+    implementation "androidx.compose.material:material:$versions.compose_material"
+    implementation "androidx.compose.animation:animation:$versions.compose_animation"
+    implementation "androidx.compose.ui:ui-tooling:$versions.compose_tooling"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$versions.compose_viewmodel"
+
+    //COMPOSE HELPER LIBS
+    implementation "com.google.android.material:compose-theme-adapter:$versions.compose_mdc"
+
 }
