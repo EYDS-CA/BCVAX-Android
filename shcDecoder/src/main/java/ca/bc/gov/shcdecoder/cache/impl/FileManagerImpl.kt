@@ -60,8 +60,14 @@ class FileManagerImpl(
     }
 
     override suspend fun getIssuers(url: String): List<Issuer> {
-        val issuerResponse = getDataFromFile(url, TrustedIssuersResponse::class.java)
-        return issuerResponse?.trustedIssuers.orEmpty()
+        return if (url.endsWith(CacheManagerImpl.SUFFIX_ISSUER_JSON)) {
+            val issuerResponse = getDataFromFile(url, TrustedIssuersResponse::class.java)
+            issuerResponse?.trustedIssuers.orEmpty()
+        } else {
+            listOf(
+                Issuer(url, url)
+            )
+        }
     }
 
     override suspend fun getKeys(url: String): List<JwksKey> {

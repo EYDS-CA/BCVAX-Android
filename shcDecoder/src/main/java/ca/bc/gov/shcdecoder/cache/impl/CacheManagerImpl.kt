@@ -73,7 +73,9 @@ internal class CacheManagerImpl(
                 timeExpiry = issuersExpiryTime
             )
         ) {
-            fileManager.downloadFile(shcConfig.issuerEndPoint)
+            if(shcConfig.issuerEndPoint.endsWith(SUFFIX_ISSUER_JSON)) {
+                fileManager.downloadFile(shcConfig.issuerEndPoint)
+            }
             fetchKeys()
             preferenceRepository.setIssuersTimeStamp(Calendar.getInstance().timeInMillis)
         }
