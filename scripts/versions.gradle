@@ -53,5 +53,6 @@ versions.compose_tooling = "1.1.1"
 versions.compose_animation = "1.1.1"
 versions.compose_viewmodel = "2.4.1"
 versions.compose_mdc = "1.1.6"
+versions.compose_ui = "1.1.1"
 
 ext.versions = versions

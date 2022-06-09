@@ -3,7 +3,10 @@ package ca.bc.gov.vaxcheck.ui.onboarding
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -12,10 +15,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import ca.bc.gov.vaxcheck.R
-import ca.bc.gov.vaxcheck.databinding.FragmentOnboardingBinding
-import ca.bc.gov.vaxcheck.utils.setSpannableLink
+import ca.bc.gov.vaxcheck.ui.onboarding.compose.OnBoardingScreen
 import ca.bc.gov.vaxcheck.utils.toast
-import ca.bc.gov.vaxcheck.utils.viewBindings
 import ca.bc.gov.vaxcheck.viewmodel.SharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -27,18 +28,30 @@ import kotlinx.coroutines.launch
  * @author Amit Metri
  */
 @AndroidEntryPoint
-class OnBoardingFragment : Fragment(R.layout.fragment_onboarding) {
+class OnBoardingFragment : Fragment() {
 
-    private val binding by viewBindings(FragmentOnboardingBinding::bind)
+    // private val binding by viewBindings(FragmentOnboardingBinding::bind)
 
     private val sharedViewModel: SharedViewModel by activityViewModels()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return ComposeView(requireContext()).apply {
+            setContent {
+                OnBoardingScreen()
+            }
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.btnAllowCameraPermission.setOnClickListener {
-            sharedViewModel.setOnBoardingShown(true)
-        }
+        // binding.btnAllowCameraPermission.setOnClickListener {
+        //     sharedViewModel.setOnBoardingShown(true)
+        // }
 
         viewLifecycleOwner.lifecycleScope.launch {
 
@@ -60,9 +73,9 @@ class OnBoardingFragment : Fragment(R.layout.fragment_onboarding) {
             }
         }
 
-        binding.txtPrivacyPolicy.setSpannableLink {
-            showPrivacyPolicy()
-        }
+        // binding.txtPrivacyPolicy.setSpannableLink {
+        //     showPrivacyPolicy()
+        // }
     }
 
     private fun showPrivacyPolicy() {
